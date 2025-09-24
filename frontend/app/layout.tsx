@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CopilotKit } from "@copilotkit/react-core";
 
 export const metadata: Metadata = {
   title: "Agentic Task Manager",
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <CopilotKit runtimeUrl="/api/copilotkit">{children}</CopilotKit>
       </body>
     </html>
   );
