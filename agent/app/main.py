@@ -2,7 +2,7 @@ from fastapi import FastAPI
 import uvicorn
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
 from copilotkit import CopilotKitSDK, LangGraphAgent
-from task_manager_agent import task_manager_graph
+from workflow import task_manager_graph
 import os
 
 app = FastAPI()
