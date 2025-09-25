@@ -19,6 +19,14 @@ from utils.json_parser import parse_json_response
 
 async def task_analysis_node(state: TaskManagerState, config: RunnableConfig) -> Command:
     """Analyze user request to determine task operation and extract parameters"""
+    if "tool_logs" not in state:
+        state["tool_logs"] = []
+    if "operation" not in state:
+        state["operation"] = None
+    if "parameters" not in state:
+        state["parameters"] = None
+    if "db_result" not in state:
+        state["db_result"] = None
     
     # Add log entry
     state["tool_logs"].append({
@@ -57,9 +65,8 @@ async def task_analysis_node(state: TaskManagerState, config: RunnableConfig) ->
         
         # Update log
         state["tool_logs"][-1]["status"] = "completed"
-        state["tool_logs"][-1]["message"] = f"Request analyzed: {operation}"
+        state["tool_logs"][-1]["message"] = "Request analyzed"
         print("completed analysis")
-        print(f"Operation: {operation}, Parameters: {parameters}")
         await copilotkit_emit_state(config, state)
         
         return Command(goto="database_operation_node", update=state)

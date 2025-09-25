@@ -11,14 +11,14 @@ from task_database import task_db
 
 async def database_operation_node(state: TaskManagerState, config: RunnableConfig) -> Command:
     """Execute the database operation based on the analyzed request"""
-    
-    operation = state["operation"]
-    parameters = state["parameters"] or {}
-    
+
+    operation = state.get("operation", "unknown")
+    parameters = state.get("parameters", {})
+
     # Add log entry
     state["tool_logs"].append({
         "id": str(uuid.uuid4()),
-        "message": f"Executing {operation.lower().replace('_', ' ')}...",
+        "message": "Executing operation",
         "status": "processing"
     })
     print(f"executing operation: {operation}")
@@ -106,6 +106,6 @@ async def database_operation_node(state: TaskManagerState, config: RunnableConfi
         try:
             await task_db.disconnect()
         except Exception as disconnect_error:
-            print(f"⚠️ Failed to disconnect database: {str(disconnect_error)}")
+            print(f"Failed to disconnect database: {str(disconnect_error)}")
             
         raise e

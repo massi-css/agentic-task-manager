@@ -1,9 +1,22 @@
-import { CopilotRuntime, copilotRuntimeNextJSAppRouterEndpoint, GoogleGenerativeAIAdapter } from "@copilotkit/runtime";
+import {
+  CopilotRuntime,
+  copilotRuntimeNextJSAppRouterEndpoint,
+  GoogleGenerativeAIAdapter,
+} from "@copilotkit/runtime";
 import { NextRequest } from "next/server";
 
-const serviceAdapter = new GoogleGenerativeAIAdapter();
+const serviceAdapter = new GoogleGenerativeAIAdapter({
+  model: "gemini-2.5-flash",
+  apiKey: process.env.GOOGLE_API_KEY,
+});
 const runtime = new CopilotRuntime({
-  remoteEndpoints: [{ url: process.env.NEXT_PUBLIC_LANGGRAPH_URL || "http://127.0.0.1:8000/copilotkit" }],
+  remoteEndpoints: [
+    {
+      url:
+        process.env.NEXT_PUBLIC_LANGGRAPH_URL ||
+        "http://127.0.0.1:8000/copilotkit",
+    },
+  ],
 });
 
 export const POST = async (req: NextRequest) => {

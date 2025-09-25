@@ -45,7 +45,8 @@ async def response_generation_node(state: TaskManagerState, config: RunnableConf
         
         # Add AI message to conversation
         ai_message = AIMessage(content=response)
-        return Command(goto="end_node", update={"messages": [ai_message]})
+        state["messages"].append(ai_message)
+        return Command(goto="end_node", update=state)
         
     except Exception as e:
         print(f"Response generation failed: {str(e)}")

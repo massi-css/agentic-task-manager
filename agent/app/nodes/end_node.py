@@ -12,7 +12,7 @@ async def end_node(state: TaskManagerState, config: RunnableConfig) -> Command:
     """Final node to clean up and end the workflow"""
     
     # Clear tool logs
-    state["tool_logs"] = []
+    # state["tool_logs"] = []
     await copilotkit_emit_state(config, state)
     
     return Command(goto=END, update=state)

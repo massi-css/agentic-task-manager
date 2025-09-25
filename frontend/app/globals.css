@@ -1,3 +1,7 @@
 @import "tailwindcss";
 
 
+/* remove the inspector pop up */
+body > button:nth-child(33) {
+  display: none !important;
+}
