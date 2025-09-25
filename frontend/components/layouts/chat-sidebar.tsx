@@ -72,7 +72,7 @@ export default function ChatSidebar() {
               title: "My Copilot",
               placeholder: "Ask me anything!",
               stopGenerating: "Stop",
-              // regenerateResponse: "Regenerate",
+              regenerateResponse: "Regenerate",
             }}
             className="h-full"
           />
