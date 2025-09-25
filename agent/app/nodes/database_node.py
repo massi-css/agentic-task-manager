@@ -6,7 +6,7 @@ from langgraph.types import Command
 from copilotkit.langgraph import copilotkit_emit_state
 
 from nodes.state import TaskManagerState
-from task_database import task_db
+from utils.task_database import task_db
 
 
 async def database_operation_node(state: TaskManagerState, config: RunnableConfig) -> Command:
@@ -64,6 +64,14 @@ async def database_operation_node(state: TaskManagerState, config: RunnableConfi
             result = await task_db.get_task_summary(
                 filter_criteria=parameters.get("filter_criteria", {})
             )
+        elif operation == "UNKNOWN":
+            # Handle analysis failures gracefully
+            error_msg = parameters.get("error_message", "Request could not be analyzed")
+            result = {
+                "success": False,
+                "message": f"Unable to process request: {error_msg}",
+                "error_type": "analysis_failure"
+            }
         else:
             result = {
                 "success": False,
@@ -76,6 +84,7 @@ async def database_operation_node(state: TaskManagerState, config: RunnableConfi
         if result.get("success"):
             state["tool_logs"][-1]["status"] = "completed"
             state["tool_logs"][-1]["message"] = "Operation completed successfully"
+            state["retry_count"] = 0  # Reset retry count on success
             print("operation completed successfully")
         else:
             state["tool_logs"][-1]["status"] = "failed"
@@ -92,20 +101,25 @@ async def database_operation_node(state: TaskManagerState, config: RunnableConfi
         
     except Exception as e:
         print(f"Database operation failed: {str(e)}")
+        
+        # Set error result instead of raising exception
+        state["db_result"] = {
+            "success": False,
+            "message": f"Database error: {str(e)}",
+            "error_type": "database_failure"
+        }
+        
+        # Update log
         state["tool_logs"][-1]["status"] = "failed"
         state["tool_logs"][-1]["message"] = f"Database operation failed: {str(e)}"
         await copilotkit_emit_state(config, state)
-        
-        # Set error result
-        state["db_result"] = {
-            "success": False,
-            "message": f"Database error: {str(e)}"
-        }
         
         # Ensure database is disconnected
         try:
             await task_db.disconnect()
         except Exception as disconnect_error:
             print(f"Failed to disconnect database: {str(disconnect_error)}")
-            
-        raise e
+        
+        # Continue to next node instead of raising error
+        print("Continuing workflow with error result after database failure")
+        return Command(goto="response_generation_node", update=state)

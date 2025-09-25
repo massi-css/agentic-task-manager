@@ -13,3 +13,4 @@ class TaskManagerState(CopilotKitState):
     parameters: Optional[Dict[str, Any]] = None
     db_result: Optional[Dict[str, Any]] = None
     final_response: Optional[str] = None
+    retry_count: int = 0

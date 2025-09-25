@@ -50,7 +50,28 @@ async def response_generation_node(state: TaskManagerState, config: RunnableConf
         
     except Exception as e:
         print(f"Response generation failed: {str(e)}")
+        
+        # Generate fallback response instead of raising exception
+        db_result = state.get("db_result", {})
+        operation = state.get("operation", "UNKNOWN")
+        
+        # Create a fallback response based on available information
+        if db_result.get("success") is False:
+            fallback_response = f"I encountered an issue while processing your request: {db_result.get('message', 'Unknown error occurred')}"
+        else:
+            fallback_response = f"I processed your {operation.lower().replace('_', ' ')} request, but had trouble generating a detailed response. The operation may have completed successfully."
+        
+        state["final_response"] = fallback_response
+        
+        # Update log
         state["tool_logs"][-1]["status"] = "failed"
-        state["tool_logs"][-1]["message"] = f"Response generation failed: {str(e)}"
+        state["tool_logs"][-1]["message"] = f"Response generation failed, using fallback: {str(e)}"
         await copilotkit_emit_state(config, state)
-        raise e
+        
+        # Add AI message to conversation with fallback response
+        ai_message = AIMessage(content=fallback_response)
+        state["messages"].append(ai_message)
+        
+        # Continue to end node instead of raising error
+        print("Continuing workflow with fallback response after response generation failure")
+        return Command(goto="end_node", update=state)

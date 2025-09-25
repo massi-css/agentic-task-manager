@@ -27,6 +27,8 @@ async def task_analysis_node(state: TaskManagerState, config: RunnableConfig) ->
         state["parameters"] = None
     if "db_result" not in state:
         state["db_result"] = None
+    if "retry_count" not in state:
+        state["retry_count"] = 0
     
     # Add log entry
     state["tool_logs"].append({
@@ -73,7 +75,16 @@ async def task_analysis_node(state: TaskManagerState, config: RunnableConfig) ->
         
     except Exception as e:
         print(f"Task analysis failed: {str(e)}")
+        
+        # Set default values to allow workflow to continue
+        state["operation"] = "UNKNOWN"
+        state["parameters"] = {"error_message": str(e)}
+        
+        # Update log
         state["tool_logs"][-1]["status"] = "failed"
         state["tool_logs"][-1]["message"] = f"Analysis failed: {str(e)}"
         await copilotkit_emit_state(config, state)
-        raise e
+        
+        # Continue to next node instead of raising error
+        print("Continuing workflow with default values after analysis failure")
+        return Command(goto="database_operation_node", update=state)
