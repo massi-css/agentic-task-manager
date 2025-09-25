@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 const serviceAdapter = new GoogleGenerativeAIAdapter();
 const runtime = new CopilotRuntime({
-  remoteEndpoints: [{ url: process.env.NEXT_PUBLIC_LANGGRAPH_URL || "http://localhost:8000/copilotkit" }],
+  remoteEndpoints: [{ url: process.env.NEXT_PUBLIC_LANGGRAPH_URL || "http://127.0.0.1:8000/copilotkit" }],
 });
 
 export const POST = async (req: NextRequest) => {
